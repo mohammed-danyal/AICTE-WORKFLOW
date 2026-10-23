@@ -1,0 +1,394 @@
+{
+  "date": "2026-10-24",
+  "role": "Supervisor",
+  "rule": {
+    "version": "1.0",
+    "days": 7,
+    "draft": null
+  },
+  "cases": [
+    {
+      "id": "26262-001",
+      "name": "Sunrise Institute of Technology",
+      "city": "Bengaluru, Karnataka",
+      "region": "South West",
+      "stage": "Scrutiny",
+      "due": "2026-10-21",
+      "owner": "A. Sharma",
+      "category": "New programme",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-002",
+      "name": "Coastal College of Engineering",
+      "city": "Chennai, Tamil Nadu",
+      "region": "Southern",
+      "stage": "EVC",
+      "due": "2026-10-25",
+      "owner": "R. Menon",
+      "category": "New institution",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-003",
+      "name": "Western Institute of Technology",
+      "city": "Pune, Maharashtra",
+      "region": "Western",
+      "stage": "SHC",
+      "due": "2026-10-22",
+      "owner": "S. Desai",
+      "category": "Extension of approval",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "SHC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-004",
+      "name": "Aryavarta Technical College",
+      "city": "Lucknow, Uttar Pradesh",
+      "region": "Northern",
+      "stage": "Decision",
+      "due": "2026-10-26",
+      "owner": "P. Singh",
+      "category": "New programme",
+      "route": [
+        "Scrutiny",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-005",
+      "name": "Eastern School of Engineering",
+      "city": "Kolkata, West Bengal",
+      "region": "Eastern",
+      "stage": "Scrutiny",
+      "due": "2026-10-29",
+      "owner": "M. Roy",
+      "category": "Extension of approval",
+      "route": [
+        "Scrutiny",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-006",
+      "name": "Narmada Institute of Technology",
+      "city": "Bhopal, Madhya Pradesh",
+      "region": "Central",
+      "stage": "EVC",
+      "due": "2026-10-20",
+      "owner": "V. Joshi",
+      "category": "New institution",
+      "route": [
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-007",
+      "name": "Aravali College of Engineering",
+      "city": "Jaipur, Rajasthan",
+      "region": "North West",
+      "stage": "SAC",
+      "due": "2026-10-28",
+      "owner": "N. Rao",
+      "category": "Appeal",
+      "route": [
+        "SAC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": "Earlier refusal preserved: AP-2025-087. Appeal ground: disputed faculty assessment."
+    },
+    {
+      "id": "26262-008",
+      "name": "Deccan Technical Institute",
+      "city": "Hyderabad, Telangana",
+      "region": "South Central",
+      "stage": "Decision issued",
+      "due": "2026-10-15",
+      "owner": "K. Reddy",
+      "category": "Extension of approval",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-009",
+      "name": "Malabar College of Technology",
+      "city": "Kozhikode, Kerala",
+      "region": "South West",
+      "stage": "EVC",
+      "due": "2026-10-27",
+      "owner": "R. Menon",
+      "category": "New programme",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": "2026-10-26",
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-010",
+      "name": "Sahyadri Institute of Engineering",
+      "city": "Nashik, Maharashtra",
+      "region": "Western",
+      "stage": "Scrutiny",
+      "due": "2026-10-24",
+      "owner": "S. Desai",
+      "category": "New programme",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-011",
+      "name": "Ganga Technical Campus",
+      "city": "Kanpur, Uttar Pradesh",
+      "region": "Northern",
+      "stage": "Decision issued",
+      "due": "2026-10-17",
+      "owner": "P. Singh",
+      "category": "Extension of approval",
+      "route": [
+        "Scrutiny",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    },
+    {
+      "id": "26262-012",
+      "name": "Sunrise Institute of Technology",
+      "city": "Bengaluru, Karnataka",
+      "region": "South West",
+      "stage": "Draft",
+      "due": "2026-10-30",
+      "owner": "Institution",
+      "category": "Additional intake",
+      "route": [
+        "Scrutiny",
+        "EVC",
+        "Decision"
+      ],
+      "version": "1.0",
+      "submitted": "2026-10-07",
+      "finding": "",
+      "reply": "",
+      "scheduled": null,
+      "visited": false,
+      "report": false,
+      "checks": false,
+      "hold": false,
+      "history": null
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OB-101",
+      "caseId": "26262-008",
+      "title": "Faculty appointment undertaking",
+      "due": "2026-10-20",
+      "status": "Pending",
+      "owner": "K. Reddy",
+      "kind": "Undertaking",
+      "file": null
+    },
+    {
+      "id": "OB-102",
+      "caseId": "26262-001",
+      "title": "Laboratory equipment undertaking",
+      "due": "2026-10-28",
+      "status": "Pending",
+      "owner": "A. Sharma",
+      "kind": "Undertaking",
+      "file": null
+    },
+    {
+      "id": "OB-103",
+      "caseId": "26262-011",
+      "title": "Fire safety certificate",
+      "due": "2026-10-22",
+      "status": "Awaiting verification",
+      "submitted": "2026-10-21",
+      "owner": "P. Singh",
+      "kind": "Document",
+      "file": "fire-safety-renewal.pdf",
+      "proposedExpiry": "2027-10-21"
+    },
+    {
+      "id": "OB-104",
+      "caseId": "26262-001",
+      "title": "Campus lease renewal",
+      "due": "2026-11-05",
+      "status": "Pending",
+      "owner": "A. Sharma",
+      "kind": "Lease",
+      "file": null
+    },
+    {
+      "id": "OB-105",
+      "caseId": "26262-008",
+      "title": "Registered campus lease",
+      "due": "2026-10-18",
+      "status": "Pending",
+      "owner": "K. Reddy",
+      "kind": "Lease",
+      "file": null
+    }
+  ],
+  "audit": [
+    {
+      "time": "23 Oct 2026, 09:42",
+      "actor": "System",
+      "event": "EVC scheduling delay flagged",
+      "ref": "26262-006"
+    },
+    {
+      "time": "22 Oct 2026, 16:18",
+      "actor": "P. Singh · Compliance verifier",
+      "event": "Renewal evidence received; verification pending",
+      "ref": "OB-103"
+    },
+    {
+      "time": "21 Oct 2026, 10:05",
+      "actor": "Case coordinator",
+      "event": "Sunrise case assigned for scrutiny · rule v1.0",
+      "ref": "26262-001"
+    }
+  ],
+  "alertState": {},
+  "complaints": [
+    {
+      "id": "CMP-2026-014",
+      "institution": "Western Institute of Technology",
+      "region": "Western",
+      "subject": "Reported shortage of laboratory equipment",
+      "source": "PGRC verified referral · sample",
+      "status": "Awaiting SCSC review",
+      "recommendation": "",
+      "notes": ""
+    }
+  ]
+}
