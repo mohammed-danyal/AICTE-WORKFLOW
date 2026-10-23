@@ -37,7 +37,17 @@ def connection():
     if DATABASE_URL:
         import psycopg
         from psycopg.rows import tuple_row
-        with psycopg.connect(DATABASE_URL, row_factory=tuple_row) as raw:
+        # Supabase's transaction pooler (port 6543) does not support named
+        # prepared statements. Psycopg 3 enables automatic preparation after
+        # repeated executions by default; disable it for transaction pooling.
+        # Require TLS and bound connection attempts so a bad URL fails promptly.
+        with psycopg.connect(
+            DATABASE_URL,
+            row_factory=tuple_row,
+            prepare_threshold=None,
+            connect_timeout=10,
+            sslmode='require',
+        ) as raw:
             yield PostgresCompatConnection(raw)
         return
     con = sqlite3.connect(DB, timeout=15)

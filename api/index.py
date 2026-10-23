@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import threading
 import os
+import logging
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -36,10 +37,14 @@ class handler(server.Handler):
                     try:
                         server.initialise()
                     except Exception:
+                        # Keep credentials out of the HTTP response, but log the
+                        # traceback so the exact database failure is visible in
+                        # Vercel Runtime Logs. Never log DATABASE_URL itself.
+                        logging.exception("AICTE Flow database initialization failed")
                         self.reply(
                             503,
                             {
-                                "error": "Database initialization failed. Verify DATABASE_URL and confirm the database is reachable."
+                                "error": "Database initialization failed. Check the Vercel Runtime Logs for the server-side exception."
                             },
                         )
                         return False

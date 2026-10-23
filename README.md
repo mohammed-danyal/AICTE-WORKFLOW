@@ -45,6 +45,8 @@ This repository now includes a Vercel Python Function for `/api/*`, static-site 
 3. Ensure Vercel deploys the repository root (the folder containing `vercel.json`, `api/`, and `public/`). Push the changes and redeploy.
 4. Open the deployed URL. The first API request creates the required tables and seeds the initial demonstration workspace and accounts. The sample passwords match usernames, for example `sunrise` / `sunrise`, `bureau` / `bureau`, or `admin` / `admin`.
 
+For Supabase Transaction Pooler URLs (port `6543`), the PostgreSQL connection explicitly disables Psycopg's automatic prepared statements, requires TLS, and uses a 10-second connection timeout. If initialization still fails, open Vercel **Logs**, filter for `/api/login` or `/api/me`, and inspect the `AICTE Flow database initialization failed` traceback. Do not paste or publish your full `DATABASE_URL`; share only the exception message after removing any credentials or sensitive host details.
+
 `vercel.json` rewrites `/api/login`, `/api/me`, `/api/state`, `/api/version`, `/api/logout`, and `/api/evidence` to `api/index.py`. The frontend remains same-origin, so no separate CORS configuration or backend URL is needed. The `DATABASE_URL` is also used for sessions and uploaded evidence, so these persist between function invocations.
 
 ### Important demo-security warning
