@@ -32,12 +32,25 @@ The API filters records for the signed-in account, validates permitted edits, an
 
 Create and submit a draft as an institution. Sign in as scrutiny to verify its documents and route it onward. Use EVC accounts for scheduling and visit review, the decision account for decisions, and the institution and compliance accounts for evidence submission and verification.
 
-Changes persist in SQLite, with save feedback, revision conflict checks and periodic refresh. Activity is attributed to the authenticated account. Evidence uploads accept PDF, PNG, JPG and DOCX up to 5 MB.
+Changes persist in the configured database, with save feedback, revision conflict checks and periodic refresh. Activity is attributed to the authenticated account. Evidence uploads accept PDF, PNG, JPG and DOCX up to 3 MB to fit serverless request limits.
 
 Passwords use salted PBKDF2 hashes; sessions expire after eight hours. Failed sign-in attempts are throttled. Pending browser drafts are separated by username.
 
-## Data and deployment
+## Deploy directly to Vercel
 
-Stop the service before copying data/portal.sqlite3 for a simple backup, or use SQLite's backup API. Restarting preserves records. The source ZIP excludes the running database and passwords; a fresh installation creates its own accounts and sample records.
+This repository now includes a Vercel Python Function for `/api/*`, static-site output from `public/`, and a PostgreSQL adapter. **A persistent PostgreSQL database is required for Vercel.** Do not rely on SQLite on Vercel: serverless function filesystems are not a durable shared database.
 
-This is a local prototype on HTTP loopback with sample identities. Production use requires TLS, an approved identity and account lifecycle, institution membership management, reviewed committee assignments and rules, evidence scanning, security review and tested backups. Notifications remain simulated. This prototype does not claim official AICTE compliance.
+1. Create a PostgreSQL database with a provider such as Neon or Supabase. Copy its connection string (prefer the provider's pooled/serverless connection string when available).
+2. In Vercel, open **Project → Settings → Environment Variables** and add `DATABASE_URL` with that connection string for Production and Preview as required. Keep the URL private; do not put it in any `NEXT_PUBLIC_` variable.
+3. Ensure Vercel deploys the repository root (the folder containing `vercel.json`, `api/`, and `public/`). Push the changes and redeploy.
+4. Open the deployed URL. The first API request creates the required tables and seeds the initial demonstration workspace and accounts. The sample passwords match usernames, for example `sunrise` / `sunrise`, `bureau` / `bureau`, or `admin` / `admin`.
+
+`vercel.json` rewrites `/api/login`, `/api/me`, `/api/state`, `/api/version`, `/api/logout`, and `/api/evidence` to `api/index.py`. The frontend remains same-origin, so no separate CORS configuration or backend URL is needed. The `DATABASE_URL` is also used for sessions and uploaded evidence, so these persist between function invocations.
+
+### Important demo-security warning
+
+This remains a **demonstration prototype**, not a production AICTE system. Demo accounts have publicly predictable passwords and all demo roles are exposed through the login UI. Anyone with the public URL can sign in and may change the shared sample data. Do not enter real institution records, personal information, or real evidence. Before any real use, replace demo-account bootstrap with an administrator-controlled account setup, enforce strong individual credentials, and carry out an independent security review. Notifications remain simulated; this prototype does not claim official AICTE compliance.
+
+## Local development and backup
+
+Local development still uses SQLite: run `python server.py` and open `http://127.0.0.1:4190`. If `DATABASE_URL` is set locally, the app uses PostgreSQL instead. To back up a local run, stop the service before copying `data/portal.sqlite3`, or use SQLite's backup API. The ZIP excludes the running local database; a fresh local installation creates its own accounts and sample records.

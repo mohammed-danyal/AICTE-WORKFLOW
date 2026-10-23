@@ -45,7 +45,7 @@ ACCOUNTS = [
 def password_hash(password, salt):
     return hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), 250000).hex()
 
-def initialise_auth(con, accounts_path):
+def initialise_auth(con, accounts_path, write_accounts=True):
     con.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, name TEXT, role TEXT, institution TEXT, salt TEXT, password_hash TEXT)')
     con.execute('CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, username TEXT, expires REAL)')
     con.execute('CREATE TABLE IF NOT EXISTS login_attempts (username TEXT, attempted REAL)')
@@ -57,7 +57,7 @@ def initialise_auth(con, accounts_path):
         salt=secrets.token_hex(16)
         con.execute('INSERT INTO users VALUES (?,?,?,?,?,?)',(username,name,role,institution,salt,password_hash(password,salt)))
         created.append((username,password,role,institution or 'Assigned staff workspace'))
-    if created:
+    if created and write_accounts:
         with accounts_path.open('a',encoding='utf-8') as file:
             if accounts_path.stat().st_size == 0:
                 file.write('# Local demonstration accounts\n\nDemo passwords match usernames. Quick login is available on the local login screen.\n\n| Username | Password | Workspace | Institution / scope |\n|---|---|---|---|\n')

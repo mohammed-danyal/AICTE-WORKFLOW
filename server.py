@@ -3,6 +3,7 @@ import argparse
 import base64
 import json
 import mimetypes
+import os
 import re
 import sqlite3
 import threading
@@ -11,15 +12,34 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 from access import initialise_auth, session_user, login, logout, scoped, merge_authorised
 
 ROOT = Path(__file__).resolve().parent
 LOCK = threading.Lock()
 DB = ROOT / 'data' / 'portal.sqlite3'
+DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
+
+class PostgresCompatConnection:
+    """Small adapter that lets the existing SQLite-oriented queries use psycopg."""
+    def __init__(self, raw):
+        self.raw = raw
+
+    def execute(self, sql, params=()):
+        statement = sql.replace('?', '%s')
+        upper = statement.lstrip().upper()
+        if upper.startswith('INSERT INTO USERS VALUES'):
+            statement += ' ON CONFLICT (username) DO NOTHING'
+        return self.raw.execute(statement, params)
 
 @contextmanager
 def connection():
+    if DATABASE_URL:
+        import psycopg
+        from psycopg.rows import tuple_row
+        with psycopg.connect(DATABASE_URL, row_factory=tuple_row) as raw:
+            yield PostgresCompatConnection(raw)
+        return
     con = sqlite3.connect(DB, timeout=15)
     con.execute('PRAGMA journal_mode=WAL')
     try:
@@ -29,17 +49,24 @@ def connection():
         con.close()
 
 def initialise():
-    DB.parent.mkdir(parents=True, exist_ok=True)
+    if not DATABASE_URL:
+        DB.parent.mkdir(parents=True, exist_ok=True)
     with connection() as con:
         con.execute('CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY, revision INTEGER NOT NULL, payload TEXT NOT NULL)')
-        con.execute('CREATE TABLE IF NOT EXISTS evidence (id TEXT PRIMARY KEY, name TEXT NOT NULL, data BLOB NOT NULL, created TEXT NOT NULL)')
-        initialise_auth(con, DB.parent / 'LOCAL-ACCOUNTS.md')
-        if 'case_id' not in {r[1] for r in con.execute('PRAGMA table_info(evidence)')}:
+        blob_type = 'BYTEA' if DATABASE_URL else 'BLOB'
+        con.execute(f'CREATE TABLE IF NOT EXISTS evidence (id TEXT PRIMARY KEY, name TEXT NOT NULL, data {blob_type} NOT NULL, created TEXT NOT NULL, case_id TEXT)')
+        initialise_auth(con, DB.parent / 'LOCAL-ACCOUNTS.md', write_accounts=not bool(os.getenv('VERCEL')) and not bool(DATABASE_URL))
+        if DATABASE_URL:
+            columns = {r[0] for r in con.execute("SELECT column_name FROM information_schema.columns WHERE table_name='evidence'").fetchall()}
+        else:
+            columns = {r[1] for r in con.execute('PRAGMA table_info(evidence)')}
+        if 'case_id' not in columns:
             con.execute('ALTER TABLE evidence ADD COLUMN case_id TEXT')
         if not con.execute('SELECT id FROM workspace WHERE id=1').fetchone():
             seed = json.loads((ROOT / 'seed.json').read_text(encoding='utf-8-sig'))
             seed.pop('role', None)
-            con.execute('INSERT INTO workspace VALUES (1,1,?)', (json.dumps(seed),))
+            seed_insert = 'INSERT INTO workspace VALUES (1,1,?) ON CONFLICT (id) DO NOTHING' if DATABASE_URL else 'INSERT INTO workspace VALUES (1,1,?)'
+            con.execute(seed_insert, (json.dumps(seed),))
         revision,payload=con.execute('SELECT revision,payload FROM workspace WHERE id=1').fetchone()
         current=json.loads(payload);dirty=False
         for case in current['cases']:
@@ -103,12 +130,31 @@ class Handler(BaseHTTPRequestHandler):
         self.send_bytes(status, json.dumps(data).encode(), extra=extra)
 
     def valid_host(self):
+        if os.getenv('VERCEL'):
+            return bool(self.headers.get('Host'))
         return self.headers.get('Host') in {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
+
+    def requested_route(self):
+        parsed = urlparse(self.path)
+        # vercel.json rewrites /api/<route> to this single serverless function.
+        if parsed.path == '/api/index' and os.getenv('VERCEL'):
+            value = parse_qs(parsed.query).get('route', [''])[0]
+            return '/api/' + value.lstrip('/') if value else '/api/index'
+        return parsed.path
+
+    def same_origin(self, origin):
+        if not origin:
+            return True
+        if os.getenv('VERCEL'):
+            parsed = urlparse(origin)
+            host = self.headers.get('Host') or self.headers.get('x-forwarded-host', '')
+            return parsed.scheme in {'https', 'http'} and parsed.netloc.lower() == host.lower()
+        return origin in {f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}'}
 
     def do_GET(self):
         if not self.valid_host():
             return self.reply(403, {'error': 'This service accepts local requests only.'})
-        route = urlparse(self.path).path
+        route = self.requested_route()
         if route.startswith('/api/'):
             with connection() as con:user=session_user(con,self.headers)
             if not user:return self.reply(401, {'error':'Sign in to access your workspace.'})
@@ -137,28 +183,31 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         origin = self.headers.get('Origin')
-        if not self.valid_host() or (origin and origin not in {f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}'}) or self.headers.get('X-Portal-Client') != 'aicte-local':
-            return self.reply(403, {'error': 'Use the local portal to make changes.'})
+        if not self.valid_host() or not self.same_origin(origin) or self.headers.get('X-Portal-Client') != 'aicte-local':
+            return self.reply(403, {'error': 'Use the portal on this site to make changes.'})
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
             return self.reply(415, {'error': 'JSON content required.'})
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if not 0 < length <= 8_000_000:
+            if not 0 < length <= 4_400_000:
                 return self.reply(413, {'error': 'Request exceeds the upload limit.'})
             body = json.loads(self.rfile.read(length))
-            route = urlparse(self.path).path
+            route = self.requested_route()
             if route == '/api/login':
                 with LOCK,connection() as con:user,token,error=login(con,body.get('username'),body.get('password'))
                 if error:return self.reply(401,{'error':error})
-                return self.reply(200,{'user':user},{'Set-Cookie':f'aicte_session={token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800'})
+                secure = '; Secure' if os.getenv('VERCEL') else ''
+                return self.reply(200,{'user':user},{'Set-Cookie':f'aicte_session={token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800{secure}'})
             with connection() as con:user=session_user(con,self.headers)
             if not user:return self.reply(401,{'error':'Your session has expired. Sign in again.'})
             if route == '/api/logout':
                 with connection() as con:logout(con,self.headers)
-                return self.reply(200,{'ok':True},{'Set-Cookie':'aicte_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'})
+                secure = '; Secure' if os.getenv('VERCEL') else ''
+                return self.reply(200,{'ok':True},{'Set-Cookie':f'aicte_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0{secure}'})
             if route == '/api/state':
                 with LOCK, connection() as con:
-                    revision, previous = con.execute('SELECT revision,payload FROM workspace WHERE id=1').fetchone()
+                    lock_suffix = ' FOR UPDATE' if DATABASE_URL else ''
+                    revision, previous = con.execute('SELECT revision,payload FROM workspace WHERE id=1' + lock_suffix).fetchone()
                     if body.get('revision') != revision:
                         return self.reply(409, {'error': 'Another session changed these records. Reload the latest version before retrying.', 'revision': revision})
                     before = json.loads(previous)
@@ -177,8 +226,8 @@ class Handler(BaseHTTPRequestHandler):
                 if Path(name).suffix.lower() not in {'.pdf', '.png', '.jpg', '.jpeg', '.docx'}:
                     return self.reply(400, {'error': 'Use PDF, PNG, JPG or DOCX evidence.'})
                 content = base64.b64decode(body['content'], validate=True)
-                if not content or len(content) > 5*1024*1024:
-                    return self.reply(413, {'error': 'Evidence must be between 1 byte and 5 MB.'})
+                if not content or len(content) > 3*1024*1024:
+                    return self.reply(413, {'error': 'Evidence must be between 1 byte and 3 MB on this deployment.'})
                 evidence_id = uuid.uuid4().hex
                 with connection() as con:
                     con.execute('INSERT INTO evidence (id,name,data,created,case_id) VALUES (?,?,?,?,?)', (evidence_id, name, content, datetime.now(timezone.utc).isoformat(),body['caseId']))
